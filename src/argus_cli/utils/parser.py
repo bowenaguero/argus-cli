@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import openpyxl
-import PyPDF2
+import pypdf
 
 
 class FileParser:
@@ -22,12 +22,12 @@ class FileParser:
 
     @staticmethod
     def read_pdf(filepath: str) -> str:
-        if not PyPDF2:
-            print("Error: PyPDF2 not installed. Run: pip install PyPDF2", file=sys.stderr)
+        if not pypdf:
+            print("Error: pypdf not installed. Run: pip install pypdf", file=sys.stderr)
             sys.exit(1)
         try:
             with open(filepath, "rb") as f:
-                reader = PyPDF2.PdfReader(f)
+                reader = pypdf.PdfReader(f)
                 text = ""
                 for page in reader.pages:
                     text += page.extract_text() + "\n"
