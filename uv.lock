@@ -149,6 +149,7 @@ name = "argus-cli"
 version = "0.0.2"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "geoip2" },
     { name = "openpyxl" },
     { name = "platformdirs" },
@@ -173,6 +174,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.1.0" },
     { name = "geoip2", specifier = ">=4.8.0" },
     { name = "openpyxl", specifier = ">=3.1.0" },
     { name = "platformdirs", specifier = ">=3.0.0" },
