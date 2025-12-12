@@ -1,6 +1,6 @@
 [project]
 name = "argus-cli"
-version = "0.0.1"
+version = "0.0.2"
 description = "A command line interface for interacting with argus. A tool for indicator lookup and enrichment."
 authors = [{ name = "Bowen Aguero", email = "bowen.aguero@cfacorp.com" }]
 readme = "README.md"
