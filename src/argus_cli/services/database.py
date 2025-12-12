@@ -53,7 +53,6 @@ class DatabaseManager:
             self._download_file(url, temp_file, edition_id)
             self._extract_database(temp_file, db_path)
             self._update_state(edition_id)
-            self.console.print(f"[green]✓[/green] {edition_id} downloaded successfully")
         except Exception as e:
             self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
             self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
@@ -63,6 +62,9 @@ class DatabaseManager:
                 self.console.print("[yellow]Continuing with existing database...[/yellow]")
                 return True
             return False
+        else:
+            self.console.print(f"[green]✓[/green] {edition_id} downloaded successfully")
+            return True
 
     def _download_file(self, url: str, temp_file: str, edition_id: str) -> None:
         with Progress(

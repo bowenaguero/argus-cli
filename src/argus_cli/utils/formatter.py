@@ -56,20 +56,23 @@ class ResultFormatter:
         return "\n".join(output_str)
 
     def write_to_file(self, results: list[dict], output_file: str | None, file_format: str = "json") -> None:
+        file_path: str
         if output_file == "":
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             extension = "json" if file_format == "json" else "csv"
-            output_file = f"argus_results_{timestamp}.{extension}"
+            file_path = f"argus_results_{timestamp}.{extension}"
+        else:
+            file_path = output_file if output_file is not None else "argus_results.json"
 
         try:
             if file_format == "csv":
-                with open(output_file, "w") as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(self.format_csv(results))
             else:
-                with open(output_file, "w") as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(results, f, indent=2)
 
-            self.console.print(f"[green]✓[/green] Results written to [cyan]{output_file}[/cyan]")
+            self.console.print(f"[green]✓[/green] Results written to [cyan]{file_path}[/cyan]")
         except Exception as e:
             self.console.print(f"[red]✗ Error writing to file:[/red] {e}")
             sys.exit(1)
