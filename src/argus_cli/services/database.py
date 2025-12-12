@@ -3,11 +3,15 @@ import os
 import shutil
 import sys
 import tarfile
+import zipfile
 from datetime import datetime, timedelta
 
 import requests
 from rich.console import Console
 from rich.progress import BarColumn, DownloadColumn, Progress, SpinnerColumn, TextColumn, TransferSpeedColumn
+
+# PX11 = IP-PROXYTYPE-COUNTRY-REGION-CITY-ISP-DOMAIN-USAGETYPE-ASN
+IP2PROXY_DB_CODE = "PX11"
 
 
 class DatabaseManager:
@@ -42,19 +46,18 @@ class DatabaseManager:
         except Exception:
             return True
 
-    def download_database(self, license_key: str, edition_id: str, db_path: str) -> bool:
+    def download_maxmind_database(self, license_key: str, edition_id: str, db_path: str) -> bool:
         if not self.needs_download(edition_id):
             return True
 
         url = f"https://download.maxmind.com/app/geoip_download?edition_id={edition_id}&license_key={license_key}&suffix=tar.gz"
-        temp_file = str(self.config.data_dir / "temp_geo.tar.gz")
+        temp_file = str(self.config.data_dir / "temp_maxmind.tar.gz")
 
         try:
-            self._download_file(url, temp_file, edition_id)
-            self._extract_database(temp_file, db_path)
+            self._download_file(url, temp_file, f"MaxMind {edition_id}")
+            self._extract_maxmind_database(temp_file, db_path)
             self._update_state(edition_id)
         except Exception as e:
-            self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
             self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
             if os.path.exists(temp_file):
                 os.remove(temp_file)
@@ -63,10 +66,33 @@ class DatabaseManager:
                 return True
             return False
         else:
-            self.console.print(f"[green]✓[/green] {edition_id} downloaded successfully")
+            self.console.print(f"[green]✓[/green] MaxMind {edition_id} downloaded successfully")
             return True
 
-    def _download_file(self, url: str, temp_file: str, edition_id: str) -> None:
+    def download_ip2proxy_database(self, token: str, db_code: str, db_path: str) -> bool:
+        if not self.needs_download(db_code):
+            return True
+
+        url = f"https://www.ip2location.com/download/?token={token}&file={db_code}"
+        temp_file = str(self.config.data_dir / "temp_ip2proxy.zip")
+
+        try:
+            self._download_file(url, temp_file, f"IP2Proxy {db_code}")
+            self._extract_ip2proxy_database(temp_file, db_path)
+            self._update_state(db_code)
+        except Exception as e:
+            self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            if os.path.exists(db_path):
+                self.console.print("[yellow]Continuing with existing database...[/yellow]")
+                return True
+            return False
+        else:
+            self.console.print(f"[green]✓[/green] IP2Proxy {db_code} database downloaded successfully")
+            return True
+
+    def _download_file(self, url: str, temp_file: str, description: str) -> None:
         with Progress(
             SpinnerColumn(),
             TextColumn("[bold blue]{task.description}"),
@@ -75,13 +101,19 @@ class DatabaseManager:
             TransferSpeedColumn(),
             console=self.console,
         ) as progress:
-            task = progress.add_task(f"Downloading {edition_id}", total=None)
+            task = progress.add_task(f"Downloading {description}", total=None)
 
-            with requests.get(url, stream=True, timeout=30) as r:
+            with requests.get(url, stream=True, timeout=60) as r:
                 if r.status_code in [401, 403]:
-                    msg = f"{r.status_code} {r.reason}: Invalid or expired license key"
+                    msg = f"{r.status_code} {r.reason}: Invalid or expired download token"
                     raise requests.exceptions.HTTPError(msg)
                 r.raise_for_status()
+
+                content_type = r.headers.get("content-type", "")
+                if "text" in content_type.lower() or "html" in content_type.lower():
+                    print(r.text)
+                    msg = "Invalid token or download limit exceeded. Please check your IP2Proxy account."
+                    raise requests.exceptions.HTTPError(msg)
 
                 total_size = int(r.headers.get("content-length", 0))
                 progress.update(task, total=total_size)
@@ -91,7 +123,7 @@ class DatabaseManager:
                         f.write(chunk)
                         progress.update(task, advance=len(chunk))
 
-    def _extract_database(self, temp_file: str, db_path: str) -> None:
+    def _extract_maxmind_database(self, temp_file: str, db_path: str) -> None:
         with tarfile.open(temp_file, "r:gz") as tar:
             mmdb_member = next((m for m in tar.getmembers() if m.name.endswith(".mmdb")), None)
             if not mmdb_member:
@@ -107,26 +139,49 @@ class DatabaseManager:
 
         os.remove(temp_file)
 
+    def _extract_ip2proxy_database(self, temp_file: str, db_path: str) -> None:
+        with zipfile.ZipFile(temp_file, "r") as zip_ref:
+            bin_files = [f for f in zip_ref.namelist() if f.upper().endswith(".BIN")]
+            if not bin_files:
+                msg = "Could not find .BIN file in archive."
+                raise ValueError(msg)
+
+            bin_file = bin_files[0]
+            with zip_ref.open(bin_file) as source, open(db_path, "wb") as target:
+                target.write(source.read())
+
+        os.remove(temp_file)
+
     def _update_state(self, edition_id: str) -> None:
         state = self.load_state()
         state[edition_id] = datetime.now().isoformat()
         self.save_state(state)
 
     def ensure_databases(self) -> None:
-        license_key = self.config.get_license_key("maxmind_license_key")
-        if not license_key:
+        # MaxMind (primary) is required, IP2Proxy (supplemental) is optional
+        maxmind_key = self.config.get_license_key("maxmind_license_key")
+        if not maxmind_key:
             if os.path.exists(self.config.db_city) and os.path.exists(self.config.db_asn):
-                return
-            self._show_missing_config_error()
-            sys.exit(1)
+                pass
+            else:
+                self._show_missing_config_error()
+                sys.exit(1)
+        else:
+            city_ok = self.download_maxmind_database(maxmind_key, "GeoLite2-City", self.config.db_city)
+            asn_ok = self.download_maxmind_database(maxmind_key, "GeoLite2-ASN", self.config.db_asn)
 
-        city_ok = self.download_database(license_key, "GeoLite2-City", self.config.db_city)
-        asn_ok = self.download_database(license_key, "GeoLite2-ASN", self.config.db_asn)
+            if (not city_ok and not os.path.exists(self.config.db_city)) or (
+                not asn_ok and not os.path.exists(self.config.db_asn)
+            ):
+                sys.exit(1)
 
-        if (not city_ok and not os.path.exists(self.config.db_city)) or (
-            not asn_ok and not os.path.exists(self.config.db_asn)
-        ):
-            sys.exit(1)
+        ip2proxy_token = self.config.get_license_key("ip2proxy_token")
+        if ip2proxy_token:
+            self.download_ip2proxy_database(ip2proxy_token, IP2PROXY_DB_CODE, self.config.db_proxy)
+        elif not os.path.exists(self.config.db_proxy):
+            self.console.print(
+                "[yellow]i[/yellow] IP2Proxy database not configured. Proxy detection will be unavailable."
+            )
 
     def _show_missing_config_error(self) -> None:
         self.console.print("\n[red]✗ Missing license key[/red]")

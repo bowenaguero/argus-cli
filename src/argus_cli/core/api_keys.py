@@ -6,4 +6,11 @@ API_KEYS = [
         "info": "Get your free MaxMind license key:",
         "link": "https://www.maxmind.com/en/geolite2/signup",
     },
+    {
+        "key": "ip2proxy_token",
+        "name": "IP2Proxy",
+        "prompt": "Enter your IP2Proxy download token",
+        "info": "Get your IP2Proxy download token (register for free):",
+        "link": "https://www.ip2location.com/register",
+    },
 ]

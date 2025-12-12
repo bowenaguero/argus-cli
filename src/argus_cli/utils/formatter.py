@@ -16,22 +16,26 @@ class ResultFormatter:
     def format_table(self, results: list[dict]) -> Table:
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("IP Address", style="cyan", no_wrap=True)
+        table.add_column("Proxy Type", style="red")
         table.add_column("Domain", style="blue")
         table.add_column("City", style="green")
         table.add_column("Country", style="yellow")
         table.add_column("ASN", style="magenta")
         table.add_column("Organization", style="white")
+        table.add_column("Usage Type", style="dim")
 
         for r in results:
             if r["error"]:
-                table.add_row(r["ip"], f"[red]ERROR: {r['error']}[/red]", "", "", "", "")
+                table.add_row(r["ip"], "", f"[red]ERROR: {r['error']}[/red]", "", "", "", "", "")
             else:
-                domain = r.get("domain") or "N/A"
-                city = r["city"] or "Unknown"
-                country = r["country"] or "Unknown"
-                asn = f"AS{r['asn']}" if r["asn"] else "N/A"
-                org = r["asn_org"] or "Unknown"
-                table.add_row(r["ip"], domain, city, country, asn, org)
+                proxy_type = r.get("proxy_type") or "-"
+                domain = r.get("domain") or "-"
+                city = r.get("city") or "-"
+                country = r.get("country") or "-"
+                asn = f"AS{r['asn']}" if r.get("asn") else "-"
+                asn_org = r.get("asn_org") or "-"
+                usage_type = r.get("usage_type") or "-"
+                table.add_row(r["ip"], proxy_type, domain, city, country, asn, asn_org, usage_type)
 
         return table
 
@@ -39,7 +43,21 @@ class ResultFormatter:
         if not results:
             return ""
 
-        fieldnames = ["ip", "domain", "city", "region", "country", "iso_code", "postal", "asn", "asn_org", "error"]
+        fieldnames = [
+            "ip",
+            "proxy_type",
+            "domain",
+            "city",
+            "region",
+            "country",
+            "iso_code",
+            "isp",
+            "domain_name",
+            "usage_type",
+            "asn",
+            "asn_org",
+            "error",
+        ]
 
         output_str = []
         output_str.append(",".join(fieldnames))

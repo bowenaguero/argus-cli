@@ -28,7 +28,7 @@ class ArgusApp:
         self.config = Config()
         self.console = console
         self.db_manager = DatabaseManager(self.config, self.console)
-        self.lookup_service = GeoIPLookup(self.config.db_city, self.config.db_asn)
+        self.lookup_service = GeoIPLookup(self.config.db_city, self.config.db_asn, self.config.db_proxy)
         self.file_parser = FileParser()
         self.formatter = ResultFormatter(self.console)
 
@@ -55,8 +55,6 @@ class ArgusApp:
         self,
         ip: str | None,
         file: Path | None,
-        fqdn: bool,
-        no_dns: bool,
         output: str | None,
         output_format: str,
         exclude_country: list[str] | None,
@@ -64,25 +62,20 @@ class ArgusApp:
         exclude_asn: list[int] | None,
         exclude_org: list[str] | None,
     ):
-        # Start timing
         start_time = time.time()
 
-        # Ensure databases are available
         self.db_manager.ensure_databases()
 
-        # Collect IP addresses
         ips = self.collect_ips(ip, file)
         if not ips:
             return None
 
-        # Perform lookups
         try:
-            results = self.lookup_service.lookup_ips(ips, fqdn, skip_dns=no_dns)
+            results = self.lookup_service.lookup_ips(ips)
         except Exception as e:
             self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
             raise typer.Exit(1) from e
 
-        # Apply filters
         result_filter = ResultFilter(
             exclude_countries=exclude_country,
             exclude_cities=exclude_city,
@@ -91,18 +84,14 @@ class ArgusApp:
         )
         filtered_results = result_filter.filter_results(results)
 
-        # Show filter stats
         if len(filtered_results) < len(results):
             self.console.print(f"[yellow][i][/i][/yellow] Filtered out {len(results) - len(filtered_results)} IP(s)")
 
-        # Always display table to console
         self.console.print(self.formatter.format_table(filtered_results))
 
-        # Write to file if output is specified
         if output is not None:
             self.formatter.write_to_file(filtered_results, output, output_format)
 
-        # Display processing time
         elapsed_time = time.time() - start_time
         self.console.print(f"\n[dim]Processed {len(ips)} IP(s) in {elapsed_time:.2f}s[/dim]")
 
@@ -148,8 +137,6 @@ def setup():
 def lookup(
     ip: Annotated[str | None, typer.Argument(help="IP address to lookup")] = None,
     file: Annotated[Path | None, typer.Option("-f", "--file", help="Extract IPs from file")] = None,
-    fqdn: Annotated[bool, typer.Option(help="Show full hostname (FQDN) instead of apex domain")] = False,
-    no_dns: Annotated[bool, typer.Option("--no-dns", help="Skip reverse DNS lookups for faster processing")] = False,
     output_format: Annotated[
         str, typer.Option("-fmt", "--format", click_type=click.Choice(["json", "csv"]), help="Output file format")
     ] = "json",
@@ -176,19 +163,16 @@ def lookup(
         ),
     ] = None,
 ):
-    # Check if no input provided
     if not ip and not file:
         console.print("[yellow]No IP or file provided. Use --help for usage information.[/yellow]")
         raise typer.Exit(0)
 
-    # Handle special case for -o flag without value (auto-naming)
+    # -o without value triggers auto-naming
     if output == "-":
         output = ""
 
     argus_app = ArgusApp()
-    argus_app.run(
-        ip, file, fqdn, no_dns, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org
-    )
+    argus_app.run(ip, file, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org)
 
 
 if __name__ == "__main__":
