@@ -35,7 +35,16 @@ class ArgusApp:
     def collect_ips(self, ip: str | None, file: Path | None) -> list[str]:
         ips = []
         if ip:
-            ips.append(ip)
+            if "/" in ip:
+                try:
+                    expanded = self.file_parser.expand_cidr(ip)
+                    ips.extend(expanded)
+                    self.console.print(f"[green]✓[/green] Expanded CIDR block {ip} into {len(expanded)} IP(s)")
+                except ValueError as e:
+                    self.console.print(f"[red]✗ Error:[/red] {e}")
+                    raise typer.Exit(1) from e
+            else:
+                ips.append(ip)
         if file:
             try:
                 with self.console.status(f"[bold blue]Reading file {file}...", spinner="dots"):
@@ -88,7 +97,6 @@ class ArgusApp:
         if len(filtered_results) < len(results):
             self.console.print(f"[yellow][i][/i][/yellow] Filtered out {len(results) - len(filtered_results)} IP(s)")
 
-        # Sort results by specified field
         sorted_results = sorted(
             filtered_results, key=lambda x: (x.get(sort_by) or "") if sort_by != "asn" else (x.get(sort_by) or 0)
         )
@@ -115,13 +123,11 @@ def setup():
 
     config_obj.data_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load existing config
     config_data = {}
     if os.path.exists(config_obj.config_file):
         with open(config_obj.config_file, encoding="utf-8") as f:
             config_data = json.load(f)
 
-    # Show current status and menu
     console.print("\n[bold]Current API Keys Status:[/bold]")
     for idx, api_config in enumerate(API_KEYS, 1):
         key_name = api_config["key"]
@@ -131,33 +137,27 @@ def setup():
     console.print(f"\n  {len(API_KEYS) + 1}. Update all keys")
     console.print("  0. Exit\n")
 
-    # Get user choice
     choice = typer.prompt("Select an option", type=int)
 
     if choice == 0:
         console.print("[yellow]Setup cancelled[/yellow]")
         raise typer.Exit(0)
 
-    # Determine which keys to update
     keys_to_update = []
     if choice == len(API_KEYS) + 1:
-        # Update all
         keys_to_update = API_KEYS
     elif 1 <= choice <= len(API_KEYS):
-        # Update specific key
         keys_to_update = [API_KEYS[choice - 1]]
     else:
         console.print("[red]✗ Error:[/red] Invalid selection")
         raise typer.Exit(1)
 
-    # Update selected keys
     console.print()
     for api_config in keys_to_update:
         console.print(f"[bold]{api_config['name']}[/bold]")
         console.print(f"{api_config['info']}")
         console.print(f"  [link={api_config['link']}]{api_config['link']}[/link]")
 
-        # Show current value if exists
         current_value = config_data.get(api_config["key"])
         if current_value:
             masked = current_value[:4] + "..." + current_value[-4:] if len(current_value) > 8 else "***"
@@ -172,7 +172,6 @@ def setup():
         config_data[api_config["key"]] = key_value.strip()
         console.print()
 
-    # Save config
     with open(config_obj.config_file, "w", encoding="utf-8") as f:
         json.dump(config_data, f, indent=2)
 
@@ -222,7 +221,6 @@ def lookup(
         console.print("[yellow]No IP or file provided. Use --help for usage information.[/yellow]")
         raise typer.Exit(0)
 
-    # -o without value triggers auto-naming
     if output == "-":
         output = ""
 

@@ -10,7 +10,6 @@ import requests
 from rich.console import Console
 from rich.progress import BarColumn, DownloadColumn, Progress, SpinnerColumn, TextColumn, TransferSpeedColumn
 
-# PX11 = IP-PROXYTYPE-COUNTRY-REGION-CITY-ISP-DOMAIN-USAGETYPE-ASN
 IP2PROXY_DB_CODE = "PX11LITEBIN"
 
 
@@ -158,7 +157,6 @@ class DatabaseManager:
         self.save_state(state)
 
     def ensure_databases(self) -> None:
-        # MaxMind (primary) is required, IP2Proxy (supplemental) is optional
         maxmind_key = self.config.get_license_key("maxmind_license_key")
         if not maxmind_key:
             if os.path.exists(self.config.db_city) and os.path.exists(self.config.db_asn):

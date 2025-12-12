@@ -41,7 +41,8 @@ argus lookup -f ips.txt -o results.json
 - `-xa, --exclude-asn` - Exclude ASN numbers
 - `-xo, --exclude-org` - Exclude organizations
 - `-o, --output` - Write results to file
-- `--format` - Output format: json or csv
+- `-fmt, --format` - Output format: json or csv
+- `--sort-by` - Sort results by field
 
 ## License
 

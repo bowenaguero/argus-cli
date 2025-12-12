@@ -15,7 +15,6 @@ class GeoIPLookup:
 
     def lookup_ip(self, city_reader, asn_reader, proxy_db, ip: str) -> dict:
         try:
-            # Primary lookup: MaxMind
             city_resp = city_reader.city(ip)
             asn_resp = asn_reader.asn(ip)
         except geoip2.errors.AddressNotFoundError:
@@ -38,12 +37,10 @@ class GeoIPLookup:
             "error": None,
         }
 
-        # Supplement with IP2Proxy data if available (optional)
         if proxy_db and self.has_proxy_db:
             try:
                 proxy_record = proxy_db.get_all(ip)
             except Exception:  # noqa: S110
-                # IP2Proxy lookup failed, but that's okay - continue with MaxMind data
                 pass
             else:
                 if proxy_record and proxy_record["country_short"] != "-":

@@ -9,6 +9,21 @@ import pypdf
 
 class FileParser:
     @staticmethod
+    def expand_cidr(cidr: str) -> list[str]:
+        """Expand CIDR block into individual IP addresses."""
+        try:
+            network = ipaddress.ip_network(cidr, strict=False)
+        except ValueError as e:
+            msg = f"Invalid CIDR block: {cidr}"
+            raise ValueError(msg) from e
+
+        if network.num_addresses > 1024:
+            msg = f"CIDR block {cidr} too large (max 1024 IPs)"
+            raise ValueError(msg)
+
+        return [str(ip) for ip in network.hosts() if ipaddress.ip_address(ip).is_global]
+
+    @staticmethod
     def extract_ips(text: str) -> list[str]:
         ips = set()
         for match in re.finditer(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b", text):
