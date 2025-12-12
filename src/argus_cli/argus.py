@@ -55,6 +55,7 @@ class ArgusApp:
         ip: str | None,
         file: Path | None,
         fqdn: bool,
+        no_dns: bool,
         output: str | None,
         output_format: str,
         exclude_country: list[str] | None,
@@ -75,7 +76,7 @@ class ArgusApp:
 
         # Perform lookups
         try:
-            results = self.lookup_service.lookup_ips(ips, fqdn)
+            results = self.lookup_service.lookup_ips(ips, fqdn, skip_dns=no_dns)
         except Exception as e:
             self.console.print(f"[red]✗ Error:[/red] {e}", style="bold")
             raise typer.Exit(1) from e
@@ -147,6 +148,7 @@ def lookup(
     ip: Annotated[str | None, typer.Argument(help="IP address to lookup")] = None,
     file: Annotated[Path | None, typer.Option("-f", "--file", help="Extract IPs from file")] = None,
     fqdn: Annotated[bool, typer.Option(help="Show full hostname (FQDN) instead of apex domain")] = False,
+    no_dns: Annotated[bool, typer.Option("--no-dns", help="Skip reverse DNS lookups for faster processing")] = False,
     output_format: Annotated[str, typer.Option("-fmt", "--format", help="Output file format (json or csv)")] = "json",
     exclude_country: Annotated[
         list[str] | None,
@@ -186,7 +188,9 @@ def lookup(
         raise typer.Exit(1)
 
     argus_app = ArgusApp()
-    argus_app.run(ip, file, fqdn, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org)
+    argus_app.run(
+        ip, file, fqdn, no_dns, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org
+    )
 
 
 if __name__ == "__main__":
