@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from typing import Annotated
 
@@ -61,6 +62,9 @@ class ArgusApp:
         exclude_asn: list[int] | None,
         exclude_org: list[str] | None,
     ):
+        # Start timing
+        start_time = time.time()
+
         # Ensure databases are available
         self.db_manager.ensure_databases()
 
@@ -95,6 +99,10 @@ class ArgusApp:
         # Write to file if output is specified
         if output is not None:
             self.formatter.write_to_file(filtered_results, output, output_format)
+
+        # Display processing time
+        elapsed_time = time.time() - start_time
+        self.console.print(f"\n[dim]Processed {len(ips)} IP(s) in {elapsed_time:.2f}s[/dim]")
 
         return filtered_results
 
