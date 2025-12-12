@@ -9,19 +9,15 @@ class ResultFilter:
         if result["error"]:
             return False
 
-        # Country filter
         if self.exclude_countries and result["country"] and result["country"].upper() in self.exclude_countries:
             return True
 
-        # City filter
         if self.exclude_cities and result["city"] and result["city"].lower() in self.exclude_cities:
             return True
 
-        # ASN filter
         if self.exclude_asns and result["asn"] in self.exclude_asns:
             return True
 
-        # Organization filter
         if self.exclude_orgs and result["asn_org"]:
             org_lower = result["asn_org"].lower()
             if any(excl in org_lower for excl in self.exclude_orgs):

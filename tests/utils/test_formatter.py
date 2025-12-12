@@ -52,7 +52,9 @@ class TestResultFormatter:
         csv_output = formatter.format_csv(results)
         lines = csv_output.strip().split("\n")
         assert len(lines) == 3  # header + 2 rows
-        assert "ip,domain" in lines[0]
+        assert "ip,proxy_type,domain" in lines[0]
+        assert "isp" in lines[0]
+        assert "usage_type" in lines[0]
         assert '"1.1.1.1"' in lines[1]
         assert '"one.one"' in lines[1]
 
