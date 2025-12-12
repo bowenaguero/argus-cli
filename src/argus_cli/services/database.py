@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.progress import BarColumn, DownloadColumn, Progress, SpinnerColumn, TextColumn, TransferSpeedColumn
 
 # PX11 = IP-PROXYTYPE-COUNTRY-REGION-CITY-ISP-DOMAIN-USAGETYPE-ASN
-IP2PROXY_DB_CODE = "PX11"
+IP2PROXY_DB_CODE = "PX11LITEBIN"
 
 
 class DatabaseManager:
