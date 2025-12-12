@@ -1,8 +1,6 @@
 # argus
 
-<kdb>
-    <img src="./images/argus.png" alt="Argus"/>
-</kbd>
+<kdb><img src="./images/argus.png" alt="Argus"/></kbd>
 
 Fast IP lookups using MaxMind GeoIP2 and IP2Proxy databases.
 
