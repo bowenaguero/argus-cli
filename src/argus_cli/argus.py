@@ -109,27 +109,68 @@ def setup():
 
     config_obj.data_dir.mkdir(parents=True, exist_ok=True)
 
+    # Load existing config
     config_data = {}
     if os.path.exists(config_obj.config_file):
-        with open(config_obj.config_file) as f:
+        with open(config_obj.config_file, encoding="utf-8") as f:
             config_data = json.load(f)
 
-    for api_config in API_KEYS:
-        console.print(f"\n{api_config['info']}")
-        console.print(f"  [link={api_config['link']}]{api_config['link']}[/link]\n")
+    # Show current status and menu
+    console.print("\n[bold]Current API Keys Status:[/bold]")
+    for idx, api_config in enumerate(API_KEYS, 1):
+        key_name = api_config["key"]
+        status = "[green]✓ Configured[/green]" if config_data.get(key_name) else "[yellow]✗ Not configured[/yellow]"
+        console.print(f"  {idx}. {api_config['name']}: {status}")
 
-        key_value = typer.prompt(api_config["prompt"])
+    console.print(f"\n  {len(API_KEYS) + 1}. Update all keys")
+    console.print("  0. Exit\n")
+
+    # Get user choice
+    choice = typer.prompt("Select an option", type=int)
+
+    if choice == 0:
+        console.print("[yellow]Setup cancelled[/yellow]")
+        raise typer.Exit(0)
+
+    # Determine which keys to update
+    keys_to_update = []
+    if choice == len(API_KEYS) + 1:
+        # Update all
+        keys_to_update = API_KEYS
+    elif 1 <= choice <= len(API_KEYS):
+        # Update specific key
+        keys_to_update = [API_KEYS[choice - 1]]
+    else:
+        console.print("[red]✗ Error:[/red] Invalid selection")
+        raise typer.Exit(1)
+
+    # Update selected keys
+    console.print()
+    for api_config in keys_to_update:
+        console.print(f"[bold]{api_config['name']}[/bold]")
+        console.print(f"{api_config['info']}")
+        console.print(f"  [link={api_config['link']}]{api_config['link']}[/link]")
+
+        # Show current value if exists
+        current_value = config_data.get(api_config["key"])
+        if current_value:
+            masked = current_value[:4] + "..." + current_value[-4:] if len(current_value) > 8 else "***"
+            console.print(f"  Current: [dim]{masked}[/dim]")
+
+        key_value = typer.prompt(f"\n{api_config['prompt']}", default=current_value or "")
 
         if not key_value or not key_value.strip():
             console.print(f"[red]✗ Error:[/red] {api_config['name']} key cannot be empty")
             raise typer.Exit(1)
 
         config_data[api_config["key"]] = key_value.strip()
+        console.print()
 
-    with open(config_obj.config_file, "w") as f:
+    # Save config
+    with open(config_obj.config_file, "w", encoding="utf-8") as f:
         json.dump(config_data, f, indent=2)
 
-    console.print(f"\n[green]✓[/green] Configuration saved to: [cyan]{config_obj.config_file}[/cyan]")
+    console.print(f"[green]✓[/green] Configuration saved to: [cyan]{config_obj.config_file}[/cyan]")
     console.print("\nYou can now run: [cyan]argus lookup <IP>[/cyan]")
 
 
