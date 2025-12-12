@@ -5,6 +5,7 @@ from typing import Annotated
 import typer
 from rich.console import Console
 
+from .core.api_keys import API_KEYS
 from .core.config import Config
 from .services.database import DatabaseManager
 from .services.lookup import GeoIPLookup
@@ -96,17 +97,6 @@ class ArgusApp:
             self.formatter.write_to_file(filtered_results, output, output_format)
 
         return filtered_results
-
-
-API_KEYS = [
-    {
-        "key": "maxmind_license_key",
-        "name": "MaxMind",
-        "prompt": "Enter your MaxMind license key",
-        "info": "Get your free MaxMind license key:",
-        "link": "https://www.maxmind.com/en/geolite2/signup",
-    },
-]
 
 
 @app.command(help="Initial setup for Argus CLI (run this first)")
