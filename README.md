@@ -1,5 +1,7 @@
 # argus
 
+![Argus](./images/argus.png)
+
 Fast IP lookups using MaxMind GeoIP2 and IP2Proxy databases.
 
 ## Install
@@ -36,7 +38,7 @@ argus lookup -f ips.txt -o results.json
 ## Options
 
 - `-f, --file` - Extract IPs from file (txt, pdf, xlsx)
-- `-xc, --exclude-country` - Exclude country codes (e.g., US, CN)
+- `-xc, --exclude-country` - Exclude countries
 - `-xct, --exclude-city` - Exclude cities
 - `-xa, --exclude-asn` - Exclude ASN numbers
 - `-xo, --exclude-org` - Exclude organizations
