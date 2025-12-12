@@ -15,6 +15,7 @@ argus setup
 ```
 
 Get your free MaxMind license key at [maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup)
+Get your free IP2Proxy download token at [https://www.ip2location.com/register](https://www.ip2location.com/register)
 
 ## Usage
 
