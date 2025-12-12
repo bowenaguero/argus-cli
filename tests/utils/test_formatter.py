@@ -1,0 +1,213 @@
+import csv
+import json
+import os
+import tempfile
+from unittest.mock import MagicMock
+
+from argus_cli.utils.formatter import ResultFormatter
+
+
+class TestResultFormatter:
+    def test_format_json(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {"ip": "1.1.1.1", "domain": "one.one", "city": "Austin", "country": "US", "asn": 13335, "org": "Cloudflare"}
+        ]
+        json_output = formatter.format_json(results)
+        parsed = json.loads(json_output)
+        assert len(parsed) == 1
+        assert parsed[0]["ip"] == "1.1.1.1"
+
+    def test_format_json_empty(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        json_output = formatter.format_json([])
+        parsed = json.loads(json_output)
+        assert parsed == []
+
+    def test_format_csv(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {
+                "ip": "1.1.1.1",
+                "domain": "one.one",
+                "city": "Austin",
+                "country": "US",
+                "asn": 13335,
+                "asn_org": "Cloudflare",
+                "error": None,
+            },
+            {
+                "ip": "8.8.8.8",
+                "domain": "dns.google",
+                "city": "Unknown",
+                "country": "US",
+                "asn": 15169,
+                "asn_org": "Google",
+                "error": None,
+            },
+        ]
+        csv_output = formatter.format_csv(results)
+        lines = csv_output.strip().split("\n")
+        assert len(lines) == 3  # header + 2 rows
+        assert "ip,domain" in lines[0]
+        assert '"1.1.1.1"' in lines[1]
+        assert '"one.one"' in lines[1]
+
+    def test_format_csv_empty(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        csv_output = formatter.format_csv([])
+        assert csv_output == ""
+
+    def test_write_to_file_json(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {
+                "ip": "1.1.1.1",
+                "domain": "one.one",
+                "city": "Austin",
+                "country": "US",
+                "asn": 13335,
+                "asn_org": "Cloudflare",
+                "error": None,
+            }
+        ]
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            temp_path = f.name
+
+        try:
+            formatter.write_to_file(results, temp_path, "json")
+
+            with open(temp_path) as f:
+                content = json.load(f)
+
+            assert len(content) == 1
+            assert content[0]["ip"] == "1.1.1.1"
+            console.print.assert_called()
+        finally:
+            os.unlink(temp_path)
+
+    def test_write_to_file_csv(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {
+                "ip": "1.1.1.1",
+                "domain": "one.one",
+                "city": "Austin",
+                "country": "US",
+                "asn": 13335,
+                "asn_org": "Cloudflare",
+                "error": None,
+            }
+        ]
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+            temp_path = f.name
+
+        try:
+            formatter.write_to_file(results, temp_path, "csv")
+
+            with open(temp_path) as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+
+            assert len(rows) == 1
+            assert rows[0]["ip"] == "1.1.1.1"
+            console.print.assert_called()
+        finally:
+            os.unlink(temp_path)
+
+    def test_write_to_file_auto_naming_json(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {
+                "ip": "1.1.1.1",
+                "domain": "one.one",
+                "city": "Austin",
+                "country": "US",
+                "asn": 13335,
+                "asn_org": "Cloudflare",
+                "error": None,
+            }
+        ]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original_dir = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+                formatter.write_to_file(results, "", "json")
+
+                call_args = console.print.call_args_list
+                assert any("argus_results_" in str(call) and ".json" in str(call) for call in call_args)
+
+                # Verify file was created in temp directory
+                json_files = [f for f in os.listdir(tmpdir) if f.startswith("argus_results_") and f.endswith(".json")]
+                assert len(json_files) == 1
+            finally:
+                os.chdir(original_dir)
+
+    def test_write_to_file_auto_naming_csv(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {
+                "ip": "1.1.1.1",
+                "domain": "one.one",
+                "city": "Austin",
+                "country": "US",
+                "asn": 13335,
+                "asn_org": "Cloudflare",
+                "error": None,
+            }
+        ]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original_dir = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+                formatter.write_to_file(results, "", "csv")
+
+                call_args = console.print.call_args_list
+                assert any("argus_results_" in str(call) and ".csv" in str(call) for call in call_args)
+
+                # Verify file was created in temp directory
+                csv_files = [f for f in os.listdir(tmpdir) if f.startswith("argus_results_") and f.endswith(".csv")]
+                assert len(csv_files) == 1
+            finally:
+                os.chdir(original_dir)
+
+    def test_format_table(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+        results = [
+            {
+                "ip": "1.1.1.1",
+                "domain": "one.one",
+                "city": "Austin",
+                "country": "US",
+                "asn": 13335,
+                "asn_org": "Cloudflare",
+                "error": None,
+            }
+        ]
+
+        table = formatter.format_table(results)
+
+        assert table is not None
+        assert table.title == "Results"
+
+    def test_format_table_empty(self):
+        console = MagicMock()
+        formatter = ResultFormatter(console)
+
+        table = formatter.format_table([])
+
+        assert table is not None
+        assert table.title == "Results"
