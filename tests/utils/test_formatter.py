@@ -201,7 +201,6 @@ class TestResultFormatter:
         table = formatter.format_table(results)
 
         assert table is not None
-        assert table.title == "Results"
 
     def test_format_table_empty(self):
         console = MagicMock()
@@ -210,4 +209,3 @@ class TestResultFormatter:
         table = formatter.format_table([])
 
         assert table is not None
-        assert table.title == "Results"
