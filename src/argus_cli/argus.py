@@ -61,6 +61,7 @@ class ArgusApp:
         exclude_city: list[str] | None,
         exclude_asn: list[int] | None,
         exclude_org: list[str] | None,
+        sort_by: str,
     ):
         start_time = time.time()
 
@@ -87,15 +88,20 @@ class ArgusApp:
         if len(filtered_results) < len(results):
             self.console.print(f"[yellow][i][/i][/yellow] Filtered out {len(results) - len(filtered_results)} IP(s)")
 
-        self.console.print(self.formatter.format_table(filtered_results))
+        # Sort results by specified field
+        sorted_results = sorted(
+            filtered_results, key=lambda x: (x.get(sort_by) or "") if sort_by != "asn" else (x.get(sort_by) or 0)
+        )
+
+        self.console.print(self.formatter.format_table(sorted_results))
 
         if output is not None:
-            self.formatter.write_to_file(filtered_results, output, output_format)
+            self.formatter.write_to_file(sorted_results, output, output_format)
 
         elapsed_time = time.time() - start_time
         self.console.print(f"\n[dim]Processed {len(ips)} IP(s) in {elapsed_time:.2f}s[/dim]")
 
-        return filtered_results
+        return sorted_results
 
 
 @app.command(help="Initial setup for Argus CLI (run this first)")
@@ -195,6 +201,14 @@ def lookup(
         list[str] | None,
         typer.Option("-xo", "--exclude-org", help="Exclude IPs from organizations containing text (case-insensitive)"),
     ] = None,
+    sort_by: Annotated[
+        str,
+        typer.Option(
+            "--sort-by",
+            click_type=click.Choice(["ip", "domain", "city", "country", "asn", "asn_org"]),
+            help="Sort results by field (default: asn_org)",
+        ),
+    ] = "asn_org",
     output: Annotated[
         str | None,
         typer.Option(
@@ -213,7 +227,7 @@ def lookup(
         output = ""
 
     argus_app = ArgusApp()
-    argus_app.run(ip, file, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org)
+    argus_app.run(ip, file, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org, sort_by)
 
 
 if __name__ == "__main__":
