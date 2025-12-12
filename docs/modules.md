@@ -1,1 +1,1 @@
-::: argus_cli.foo
+::: argus_cli.argus
