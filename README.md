@@ -1,6 +1,6 @@
 # argus
 
-Fast IP geolocation lookups using MaxMind GeoIP2 databases.
+Fast IP lookups using MaxMind GeoIP2 and IP2Proxy databases.
 
 ## Install
 
@@ -26,9 +26,6 @@ argus lookup 8.8.8.8
 # From file
 argus lookup -f ips.txt
 
-# Skip DNS lookups for speed
-argus lookup -f ips.txt --no-dns
-
 # Filter results
 argus lookup -f ips.txt -xc US -xa 15169
 
@@ -39,8 +36,6 @@ argus lookup -f ips.txt -o results.json
 ## Options
 
 - `-f, --file` - Extract IPs from file (txt, pdf, xlsx)
-- `--fqdn` - Show full hostname instead of apex domain
-- `--no-dns` - Skip reverse DNS lookups (faster)
 - `-xc, --exclude-country` - Exclude country codes (e.g., US, CN)
 - `-xct, --exclude-city` - Exclude cities
 - `-xa, --exclude-asn` - Exclude ASN numbers
