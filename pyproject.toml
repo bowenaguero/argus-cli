@@ -41,7 +41,7 @@ dev = [
     "tox-uv>=1.29.0",
     "deptry>=0.24.0",
     "ty>=0.0.1a32",
-    
+
     "ruff>=0.14.8",
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.7.0",
@@ -112,5 +112,3 @@ ignore = [
 
 [tool.ruff.format]
 preview = true
-
-
