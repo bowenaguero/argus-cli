@@ -14,7 +14,7 @@ class ResultFormatter:
         return json.dumps(results, indent=2)
 
     def format_table(self, results: list[dict]) -> Table:
-        table = Table(title="Results", show_header=True, header_style="bold magenta")
+        table = Table(show_header=True, header_style="bold magenta")
         table.add_column("IP Address", style="cyan", no_wrap=True)
         table.add_column("Domain", style="blue")
         table.add_column("City", style="green")

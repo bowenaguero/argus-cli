@@ -74,21 +74,32 @@ class GeoIPLookup:
 
     def lookup_ips(self, ips: list[str], use_fqdn: bool = False, skip_dns: bool = False) -> list[dict]:
         results = []
+
+        # Only show progress bar for multiple IPs
+        show_progress = len(ips) > 1
+
         with (
             geoip2.database.Reader(self.city_db_path) as city_reader,
             geoip2.database.Reader(self.asn_db_path) as asn_reader,
-            Progress(
-                SpinnerColumn(),
-                TextColumn("[bold blue]Looking up IPs..."),
-                BarColumn(),
-                TaskProgressColumn(),
-                TextColumn("[cyan]{task.fields[current_ip]}"),
-            ) as progress,
         ):
-            task = progress.add_task("lookup", total=len(ips), current_ip="")
-            for ip in ips:
-                progress.update(task, current_ip=ip)
-                result = self.lookup_ip(city_reader, asn_reader, ip, use_fqdn, skip_dns)
-                results.append(result)
-                progress.advance(task)
+            if show_progress:
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[bold blue]Looking up IPs..."),
+                    BarColumn(),
+                    TaskProgressColumn(),
+                    TextColumn("[cyan]{task.fields[current_ip]}"),
+                ) as progress:
+                    task = progress.add_task("lookup", total=len(ips), current_ip="")
+                    for ip in ips:
+                        progress.update(task, current_ip=ip)
+                        result = self.lookup_ip(city_reader, asn_reader, ip, use_fqdn, skip_dns)
+                        results.append(result)
+                        progress.advance(task)
+            else:
+                # Single IP - no progress bar
+                for ip in ips:
+                    result = self.lookup_ip(city_reader, asn_reader, ip, use_fqdn, skip_dns)
+                    results.append(result)
+
         return results
