@@ -1,7 +1,10 @@
 import json
 import os
 import tempfile
+from pathlib import Path
 from unittest.mock import patch
+
+from platformdirs import user_data_dir
 
 from argus_cli.core.config import Config
 
@@ -10,7 +13,7 @@ class TestConfig:
     def test_get_license_key_file_not_exists(self):
         config = Config()
         with patch.object(config, "config_file", "/nonexistent/keys.json"):
-            assert config.get_license_key() is None
+            assert config.get_license_key("maxmind_license_key") is None
 
     def test_get_license_key_valid_json(self):
         config = Config()
@@ -20,7 +23,7 @@ class TestConfig:
 
         try:
             with patch.object(config, "config_file", temp_path):
-                assert config.get_license_key() == "test_key_123"
+                assert config.get_license_key("maxmind_license_key") == "test_key_123"
         finally:
             os.unlink(temp_path)
 
@@ -32,7 +35,7 @@ class TestConfig:
 
         try:
             with patch.object(config, "config_file", temp_path):
-                assert config.get_license_key() is None
+                assert config.get_license_key("maxmind_license_key") is None
         finally:
             os.unlink(temp_path)
 
@@ -44,7 +47,7 @@ class TestConfig:
 
         try:
             with patch.object(config, "config_file", temp_path):
-                assert config.get_license_key() is None
+                assert config.get_license_key("maxmind_license_key") is None
         finally:
             os.unlink(temp_path)
 
@@ -55,24 +58,10 @@ class TestConfig:
 
         try:
             with patch.object(config, "config_file", temp_path):
-                assert config.get_license_key() is None
+                assert config.get_license_key("maxmind_license_key") is None
         finally:
             os.unlink(temp_path)
 
-    @patch("sys.platform", "darwin")
-    def test_get_data_dir_macos(self):
+    def test_get_data_dir(self):
         config = Config()
-        assert "Library/Application Support/argus" in str(config.data_dir)
-
-    @patch("sys.platform", "win32")
-    def test_get_data_dir_windows(self):
-        import tempfile
-
-        with tempfile.TemporaryDirectory() as tmpdir, patch.dict(os.environ, {"LOCALAPPDATA": tmpdir}):
-            config = Config()
-            assert "argus" in str(config.data_dir)
-
-    @patch("sys.platform", "linux")
-    def test_get_data_dir_linux(self):
-        config = Config()
-        assert ".local/share/argus" in str(config.data_dir)
+        assert Path(user_data_dir("argus", appauthor=False)) == config.data_dir

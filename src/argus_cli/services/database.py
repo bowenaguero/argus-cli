@@ -113,7 +113,7 @@ class DatabaseManager:
         self.save_state(state)
 
     def ensure_databases(self) -> None:
-        license_key = self.config.get_license_key()
+        license_key = self.config.get_license_key("maxmind_license_key")
         if not license_key:
             if os.path.exists(self.config.db_city) and os.path.exists(self.config.db_asn):
                 return

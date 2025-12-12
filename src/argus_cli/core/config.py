@@ -1,7 +1,8 @@
 import json
 import os
-import sys
 from pathlib import Path
+
+from platformdirs import user_data_dir
 
 
 class Config:
@@ -15,20 +16,15 @@ class Config:
         self.config_file = str(self.data_dir / "keys.json")
 
     def _get_data_dir(self) -> Path:
-        if sys.platform == "darwin":
-            return Path.home() / "Library" / "Application Support" / "argus"
-        elif sys.platform == "win32":
-            return Path(os.environ.get("LOCALAPPDATA", Path.home())) / "argus"
-        else:
-            return Path.home() / ".local" / "share" / "argus"
+        return Path(user_data_dir("argus", appauthor=False))
 
-    def get_license_key(self) -> str | None:
+    def get_license_key(self, license_key_name) -> str | None:
         if not os.path.exists(self.config_file):
             return None
         try:
             with open(self.config_file) as f:
                 config = json.load(f)
-                return config.get("maxmind_license_key")
+                return config.get(license_key_name)
         except Exception:  # noqa: S110
             pass
         return None

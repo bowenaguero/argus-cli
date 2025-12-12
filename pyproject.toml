@@ -24,6 +24,7 @@ dependencies = [
     "requests>=2.31.0",
     "rich>=13.0.0",
     "typer>=0.15.0",
+    "platformdirs>=3.0.0",
 ]
 
 [project.scripts]

@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 from typing import Annotated
 
+import click
 import typer
 from rich.console import Console
 
@@ -149,7 +150,9 @@ def lookup(
     file: Annotated[Path | None, typer.Option("-f", "--file", help="Extract IPs from file")] = None,
     fqdn: Annotated[bool, typer.Option(help="Show full hostname (FQDN) instead of apex domain")] = False,
     no_dns: Annotated[bool, typer.Option("--no-dns", help="Skip reverse DNS lookups for faster processing")] = False,
-    output_format: Annotated[str, typer.Option("-fmt", "--format", help="Output file format (json or csv)")] = "json",
+    output_format: Annotated[
+        str, typer.Option("-fmt", "--format", click_type=click.Choice(["json", "csv"]), help="Output file format")
+    ] = "json",
     exclude_country: Annotated[
         list[str] | None,
         typer.Option("-xc", "--exclude-country", help="Exclude IPs from country (ISO code, e.g., US, CN)"),
@@ -181,11 +184,6 @@ def lookup(
     # Handle special case for -o flag without value (auto-naming)
     if output == "-":
         output = ""
-
-    # Validate format
-    if output_format not in ["json", "csv"]:
-        console.print(f"[red]✗ Error:[/red] Invalid format '{output_format}'. Must be 'json' or 'csv'.")
-        raise typer.Exit(1)
 
     argus_app = ArgusApp()
     argus_app.run(
