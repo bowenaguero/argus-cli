@@ -1,69 +1,52 @@
-# argus-cli
+# argus
 
-[![Release](https://img.shields.io/github/v/release/bowenaguero/argus-cli)](https://img.shields.io/github/v/release/bowenaguero/argus-cli)
-[![Build status](https://img.shields.io/github/actions/workflow/status/bowenaguero/argus-cli/main.yml?branch=main)](https://github.com/bowenaguero/argus-cli/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/bowenaguero/argus-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/bowenaguero/argus-cli)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/bowenaguero/argus-cli)](https://img.shields.io/github/commit-activity/m/bowenaguero/argus-cli)
-[![License](https://img.shields.io/github/license/bowenaguero/argus-cli)](https://img.shields.io/github/license/bowenaguero/argus-cli)
+Fast IP geolocation lookups using MaxMind GeoIP2 databases.
 
-A command line interface for interacting with argus. A tool for indicator lookup and enrichment.
-
-- **Github repository**: <https://github.com/bowenaguero/argus-cli/>
-- **Documentation** <https://bowenaguero.github.io/argus-cli/>
-
-## Getting started with your project
-
-### 1. Create a New Repository
-
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
+## Install
 
 ```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:bowenaguero/argus-cli.git
-git push -u origin main
+uv tool install git+https://github.com/bowenaguero/argus-cli
 ```
 
-### 2. Set Up Your Development Environment
-
-Then, install the environment and the pre-commit hooks with
+## Setup
 
 ```bash
-make install
+argus setup
 ```
 
-This will also generate your `uv.lock` file
+Get your free MaxMind license key at [maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup)
 
-### 3. Run the pre-commit hooks
-
-Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
+## Usage
 
 ```bash
-uv run pre-commit run -a
+# Single IP
+argus lookup 8.8.8.8
+
+# From file
+argus lookup -f ips.txt
+
+# Skip DNS lookups for speed
+argus lookup -f ips.txt --no-dns
+
+# Filter results
+argus lookup -f ips.txt -xc US -xa 15169
+
+# Export to JSON/CSV
+argus lookup -f ips.txt -o results.json
 ```
 
-### 4. Commit the changes
+## Options
 
-Lastly, commit the changes made by the two steps above to your repository.
+- `-f, --file` - Extract IPs from file (txt, pdf, xlsx)
+- `--fqdn` - Show full hostname instead of apex domain
+- `--no-dns` - Skip reverse DNS lookups (faster)
+- `-xc, --exclude-country` - Exclude country codes (e.g., US, CN)
+- `-xct, --exclude-city` - Exclude cities
+- `-xa, --exclude-asn` - Exclude ASN numbers
+- `-xo, --exclude-org` - Exclude organizations
+- `-o, --output` - Write results to file
+- `--format` - Output format: json or csv
 
-```bash
-git add .
-git commit -m 'Fix formatting issues'
-git push origin main
-```
+## License
 
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
-
-To finalize the set-up for publishing to PyPI, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/codecov/).
-
-## Releasing a new version
-
-
-
----
-
-Repository initiated with [fpgmaas/cookiecutter-uv](https://github.com/fpgmaas/cookiecutter-uv).
+MIT
