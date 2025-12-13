@@ -48,7 +48,3 @@ argus lookup -f ips.txt -o results.json
 - `-o, --output` - Write results to file
 - `-fmt, --format` - Output format: json or csv
 - `--sort-by` - Sort results by field
-
-## License
-
-MIT
