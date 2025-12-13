@@ -1,7 +1,0 @@
-# name: release-main
-
-# on:
-#   release:
-#     types: [published]
-
-# jobs:
