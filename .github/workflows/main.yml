@@ -48,3 +48,13 @@ jobs:
 
       - name: Check typing
         run: uv run ty check
+
+    generate-and-upload-coverage-report:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Generate report
+        run: pytest --cov --cov-branch --cov-report=xml
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
