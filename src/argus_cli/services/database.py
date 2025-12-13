@@ -8,7 +8,14 @@ from datetime import datetime, timedelta
 
 import requests
 from rich.console import Console
-from rich.progress import BarColumn, DownloadColumn, Progress, SpinnerColumn, TextColumn, TransferSpeedColumn
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TransferSpeedColumn,
+)
 
 IP2PROXY_DB_CODE = "PX11LITEBIN"
 

@@ -98,7 +98,8 @@ class ArgusApp:
             self.console.print(f"[yellow][i][/i][/yellow] Filtered out {len(results) - len(filtered_results)} IP(s)")
 
         sorted_results = sorted(
-            filtered_results, key=lambda x: (x.get(sort_by) or "") if sort_by != "asn" else (x.get(sort_by) or 0)
+            filtered_results,
+            key=lambda x: ((x.get(sort_by) or "") if sort_by != "asn" else (x.get(sort_by) or 0)),
         )
 
         self.console.print(self.formatter.format_table(sorted_results))
@@ -184,21 +185,37 @@ def lookup(
     ip: Annotated[str | None, typer.Argument(help="IP address to lookup")] = None,
     file: Annotated[Path | None, typer.Option("-f", "--file", help="Extract IPs from file")] = None,
     output_format: Annotated[
-        str, typer.Option("-fmt", "--format", click_type=click.Choice(["json", "csv"]), help="Output file format")
+        str,
+        typer.Option(
+            "-fmt",
+            "--format",
+            click_type=click.Choice(["json", "csv"]),
+            help="Output file format",
+        ),
     ] = "json",
     exclude_country: Annotated[
         list[str] | None,
-        typer.Option("-xc", "--exclude-country", help="Exclude IPs from country (ISO code, e.g., US, CN)"),
+        typer.Option(
+            "-xc",
+            "--exclude-country",
+            help="Exclude IPs from country (ISO code, e.g., US, CN)",
+        ),
     ] = None,
     exclude_city: Annotated[
-        list[str] | None, typer.Option("-xct", "--exclude-city", help="Exclude IPs from city (case-insensitive)")
+        list[str] | None,
+        typer.Option("-xct", "--exclude-city", help="Exclude IPs from city (case-insensitive)"),
     ] = None,
     exclude_asn: Annotated[
-        list[int] | None, typer.Option("-xa", "--exclude-asn", help="Exclude IPs from ASN (e.g., 15169)")
+        list[int] | None,
+        typer.Option("-xa", "--exclude-asn", help="Exclude IPs from ASN (e.g., 15169)"),
     ] = None,
     exclude_org: Annotated[
         list[str] | None,
-        typer.Option("-xo", "--exclude-org", help="Exclude IPs from organizations containing text (case-insensitive)"),
+        typer.Option(
+            "-xo",
+            "--exclude-org",
+            help="Exclude IPs from organizations containing text (case-insensitive)",
+        ),
     ] = None,
     sort_by: Annotated[
         str,
@@ -225,7 +242,17 @@ def lookup(
         output = ""
 
     argus_app = ArgusApp()
-    argus_app.run(ip, file, output, output_format, exclude_country, exclude_city, exclude_asn, exclude_org, sort_by)
+    argus_app.run(
+        ip,
+        file,
+        output,
+        output_format,
+        exclude_country,
+        exclude_city,
+        exclude_asn,
+        exclude_org,
+        sort_by,
+    )
 
 
 if __name__ == "__main__":

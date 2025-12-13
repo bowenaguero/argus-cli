@@ -55,7 +55,10 @@ class FileParser:
     @staticmethod
     def read_excel(filepath: str) -> str:
         if not openpyxl:
-            print("Error: openpyxl not installed. Run: pip install openpyxl", file=sys.stderr)
+            print(
+                "Error: openpyxl not installed. Run: pip install openpyxl",
+                file=sys.stderr,
+            )
             sys.exit(1)
         try:
             wb = openpyxl.load_workbook(filepath, data_only=True)

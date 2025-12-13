@@ -3,7 +3,13 @@ import os
 import geoip2.database
 import geoip2.errors
 import IP2Proxy
-from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 
 
 class GeoIPLookup:
@@ -28,12 +34,14 @@ class GeoIPLookup:
             "ip": ip,
             "domain": None,
             "city": city_resp.city.name if city_resp.city.name else None,
-            "region": city_resp.subdivisions.most_specific.name if city_resp.subdivisions.most_specific.name else None,
+            "region": (
+                city_resp.subdivisions.most_specific.name if city_resp.subdivisions.most_specific.name else None
+            ),
             "country": city_resp.country.name if city_resp.country.name else None,
-            "iso_code": city_resp.country.iso_code if city_resp.country.iso_code else None,
+            "iso_code": (city_resp.country.iso_code if city_resp.country.iso_code else None),
             "postal": city_resp.postal.code if city_resp.postal.code else None,
-            "asn": asn_resp.autonomous_system_number if asn_resp.autonomous_system_number else None,
-            "asn_org": asn_resp.autonomous_system_organization if asn_resp.autonomous_system_organization else None,
+            "asn": (asn_resp.autonomous_system_number if asn_resp.autonomous_system_number else None),
+            "asn_org": (asn_resp.autonomous_system_organization if asn_resp.autonomous_system_organization else None),
             "error": None,
         }
 

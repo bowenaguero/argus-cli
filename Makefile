@@ -20,6 +20,21 @@ test: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@uv run python -m pytest --doctest-modules
 
+.PHONY: type-check
+type-check: ## Type check the code with ty
+	@echo "🚀 Type checking code: Running ty"
+	@uv run ty check
+
+.PHONY: lint
+lint: ## Lint the code with ruff
+	@echo "🚀 Linting code: Running ruff"
+	@uv run ruff check src
+
+.PHONY: format
+format: ## Format the code with ruff and black
+	@echo "🚀 Formatting code: Running ruff"
+	@uv run ruff check src --fix
+
 .PHONY: build
 build: clean-build ## Build wheel file
 	@echo "🚀 Creating wheel file"

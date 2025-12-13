@@ -95,7 +95,12 @@ class ResultFormatter:
             self.console.print(f"[red]✗ Error writing to file:[/red] {e}")
             sys.exit(1)
 
-    def output_results(self, results: list[dict], json_output: bool = False, output_file: str | None = None) -> None:
+    def output_results(
+        self,
+        results: list[dict],
+        json_output: bool = False,
+        output_file: str | None = None,
+    ) -> None:
         if output_file is not None:
             self.write_to_file(results, output_file)
         elif json_output:

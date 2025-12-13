@@ -1,5 +1,11 @@
 class ResultFilter:
-    def __init__(self, exclude_countries=None, exclude_cities=None, exclude_asns=None, exclude_orgs=None):
+    def __init__(
+        self,
+        exclude_countries=None,
+        exclude_cities=None,
+        exclude_asns=None,
+        exclude_orgs=None,
+    ):
         self.exclude_countries = [c.upper() for c in (exclude_countries or [])]
         self.exclude_cities = [c.lower() for c in (exclude_cities or [])]
         self.exclude_asns = exclude_asns or []
