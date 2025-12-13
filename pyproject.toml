@@ -1,7 +1,7 @@
 [project]
 name = "argus-cli"
 version = "0.0.2"
-description = "A command line interface for interacting with argus. A tool for indicator lookup and enrichment."
+description = "A tool for indicator lookup and enrichment."
 authors = [{ name = "Bowen Aguero", email = "bowen.aguero@cfacorp.com" }]
 readme = "README.md"
 keywords = ['python']
@@ -44,11 +44,7 @@ dev = [
     "tox-uv>=1.29.0",
     "deptry>=0.24.0",
     "ty>=0.0.1a32",
-
     "ruff>=0.14.8",
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.7.0",
-    "mkdocstrings[python]>=1.0.0",
 ]
 
 [build-system]
