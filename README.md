@@ -1,5 +1,7 @@
 # argus
 
+![GitHub branch status](https://img.shields.io/github/checks-status/:user/:repo/:branch)
+
 <kdb><img src="./images/argus.png" alt="Argus"/></kbd>
 
 Fast IP lookups using MaxMind GeoIP2 and IP2Proxy databases.
