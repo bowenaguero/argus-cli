@@ -16,6 +16,9 @@ class ResultFormatter:
     def format_table(self, results: list[dict]) -> Table:
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("IP Address", style="cyan", no_wrap=True)
+        table.add_column("CFA Managed", style="bright_green")
+        table.add_column("CFA ID", style="bright_cyan")
+        table.add_column("Platform", style="bright_magenta")
         table.add_column("Proxy Type", style="red")
         table.add_column("Domain", style="blue")
         table.add_column("City", style="green")
@@ -26,8 +29,11 @@ class ResultFormatter:
 
         for r in results:
             if r["error"]:
-                table.add_row(r["ip"], "", f"[red]ERROR: {r['error']}[/red]", "", "", "", "", "")
+                table.add_row(r["ip"], "", "", "", "", f"[red]ERROR: {r['error']}[/red]", "", "", "", "", "")
             else:
+                cfa_managed = "✓" if r.get("cfa_managed") else "-"
+                cfa_id = r.get("cfa_id") or "-"
+                platform = r.get("platform") or "-"
                 proxy_type = r.get("proxy_type") or "-"
                 domain = r.get("domain") or "-"
                 city = r.get("city") or "-"
@@ -35,7 +41,9 @@ class ResultFormatter:
                 asn = f"AS{r['asn']}" if r.get("asn") else "-"
                 asn_org = r.get("asn_org") or "-"
                 usage_type = r.get("usage_type") or "-"
-                table.add_row(r["ip"], proxy_type, domain, city, country, asn, asn_org, usage_type)
+                table.add_row(
+                    r["ip"], cfa_managed, cfa_id, platform, proxy_type, domain, city, country, asn, asn_org, usage_type
+                )
 
         return table
 
@@ -45,6 +53,9 @@ class ResultFormatter:
 
         fieldnames = [
             "ip",
+            "cfa_managed",
+            "cfa_id",
+            "platform",
             "proxy_type",
             "domain",
             "city",

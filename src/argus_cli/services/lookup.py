@@ -11,13 +11,17 @@ from rich.progress import (
     TextColumn,
 )
 
+from .cfa_lookup import CFALookup
+
 
 class GeoIPLookup:
-    def __init__(self, city_db_path: str, asn_db_path: str, proxy_db_path: str):
+    def __init__(self, city_db_path: str, asn_db_path: str, proxy_db_path: str, cfa_db_dir: str):
         self.city_db_path = city_db_path
         self.asn_db_path = asn_db_path
         self.proxy_db_path = proxy_db_path
+        self.cfa_db_dir = cfa_db_dir
         self.has_proxy_db = os.path.exists(proxy_db_path)
+        self.cfa_lookup = CFALookup(cfa_db_dir)
 
     def lookup_ip(self, city_reader, asn_reader, proxy_db, ip: str) -> dict:
         try:
@@ -42,6 +46,9 @@ class GeoIPLookup:
             "postal": city_resp.postal.code if city_resp.postal.code else None,
             "asn": (asn_resp.autonomous_system_number if asn_resp.autonomous_system_number else None),
             "asn_org": (asn_resp.autonomous_system_organization if asn_resp.autonomous_system_organization else None),
+            "cfa_managed": False,
+            "cfa_id": None,
+            "platform": None,
             "error": None,
         }
 
@@ -58,12 +65,24 @@ class GeoIPLookup:
                     result["domain_name"] = proxy_record["domain"] if proxy_record["domain"] != "-" else None
                     result["usage_type"] = proxy_record["usage_type"] if proxy_record["usage_type"] != "-" else None
 
+        # Check CFA databases for CFA managed IPs
+        if self.cfa_lookup.has_cfa_dbs:
+            cfa_result = self.cfa_lookup.lookup_ip(ip)
+            if cfa_result:
+                result["cfa_managed"] = cfa_result["cfa_managed"]
+                result["cfa_id"] = cfa_result["cfa_id"]
+                result["platform"] = cfa_result["platform"]
+
         return result
 
     def lookup_ips(self, ips: list[str]) -> list[dict]:
         results = []
 
         show_progress = len(ips) > 1
+
+        # Load CFA databases if available
+        if self.cfa_lookup.load_databases():
+            self.cfa_lookup.has_cfa_dbs = True
 
         proxy_db = None
         if self.has_proxy_db:

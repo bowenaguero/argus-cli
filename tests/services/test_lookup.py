@@ -29,7 +29,7 @@ class TestLookupIP:
             "usage_type": "DCH",
         }
 
-        lookup_service = GeoIPLookup("", "", "")
+        lookup_service = GeoIPLookup("", "", "", "")
         lookup_service.has_proxy_db = True
         result = lookup_service.lookup_ip(city_reader, asn_reader, proxy_db, "8.8.8.8")
 
@@ -42,6 +42,9 @@ class TestLookupIP:
         assert result["proxy_type"] == "DCH"
         assert result["usage_type"] == "DCH"
         assert result["domain"] == "google.com"
+        assert result["cfa_managed"] is False
+        assert result["cfa_id"] is None
+        assert result["platform"] is None
         assert result["error"] is None
 
     def test_ip_not_found(self):
@@ -52,7 +55,7 @@ class TestLookupIP:
 
         city_reader.city.side_effect = geoip2.errors.AddressNotFoundError("IP not found")
 
-        lookup_service = GeoIPLookup("", "", "")
+        lookup_service = GeoIPLookup("", "", "", "")
         result = lookup_service.lookup_ip(city_reader, asn_reader, None, "1.2.3.4")
 
         assert result["ip"] == "1.2.3.4"
@@ -63,7 +66,7 @@ class TestLookupIP:
         asn_reader = Mock()
         city_reader.city.side_effect = ValueError("Invalid IP")
 
-        lookup_service = GeoIPLookup("", "", "")
+        lookup_service = GeoIPLookup("", "", "", "")
         result = lookup_service.lookup_ip(city_reader, asn_reader, None, "invalid")
 
         assert result["ip"] == "invalid"
