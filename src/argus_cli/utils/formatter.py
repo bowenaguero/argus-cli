@@ -53,7 +53,7 @@ class ResultFormatter:
             lines.append(Text("ASN: ", style="magenta") + Text(" ".join(asn_parts)))
 
         if result.get("domain"):
-            lines.append(Text("Domain: ", style="blue") + Text(result["domain"]))
+            lines.append(Text("Domain: ", style="bright_cyan") + Text(result["domain"]))
 
         proxy_parts = [
             p
@@ -70,7 +70,7 @@ class ResultFormatter:
         table.add_column("IP", style="cyan", no_wrap=True)
         table.add_column("Org Info", style="bright_green")
         table.add_column("Proxy", style="red")
-        table.add_column("Network", style="blue")
+        table.add_column("Network", style="bright_cyan")
         table.add_column("Location", style="yellow")
 
         for r in results:
