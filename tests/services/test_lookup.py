@@ -42,8 +42,8 @@ class TestLookupIP:
         assert result["proxy_type"] == "DCH"
         assert result["usage_type"] == "DCH"
         assert result["domain"] == "google.com"
-        assert result["cfa_managed"] is False
-        assert result["cfa_id"] is None
+        assert result["org_managed"] is False
+        assert result["org_id"] is None
         assert result["platform"] is None
         assert result["error"] is None
 
