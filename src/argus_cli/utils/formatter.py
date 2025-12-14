@@ -3,7 +3,9 @@ import sys
 from datetime import datetime
 
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
 
 
 class ResultFormatter:
@@ -13,39 +15,110 @@ class ResultFormatter:
     def format_json(self, results: list[dict]) -> str:
         return json.dumps(results, indent=2)
 
-    def format_table(self, results: list[dict]) -> Table:
+    def format_table(self, results: list[dict]) -> Table | Panel:
+        # Panel for single IP, table for multiple
+        if len(results) == 1:
+            return self._format_panel(results[0])
+        return self._format_grouped_table(results)
+
+    def _format_panel(self, result: dict) -> Panel:
+        if result["error"]:
+            content = Text(f"ERROR: {result['error']}", style="bold red")
+            return Panel(content, title=f"[cyan]{result['ip']}[/cyan]", border_style="red")
+
+        lines = self._build_panel_lines(result)
+        content = Text("\n").join(lines) if lines else Text("No additional information available", style="dim")
+        border_style = "bright_green" if result.get("org_managed") else "cyan"
+        return Panel(content, title=f"[cyan]{result['ip']}[/cyan]", border_style=border_style)
+
+    def _build_panel_lines(self, result: dict) -> list[Text]:
+        lines = []
+
+        if result.get("org_managed"):
+            org_text = f"✓ {result.get('org_id', 'Unknown')}"
+            if result.get("platform"):
+                org_text += f" ({result['platform']})"
+            lines.append(Text("Org Managed: ", style="bright_green") + Text(org_text, style="bright_cyan"))
+
+        location_parts = [p for p in [result.get("city"), result.get("country")] if p]
+        if location_parts:
+            lines.append(Text("Location: ", style="yellow") + Text(", ".join(location_parts)))
+
+        asn_parts = []
+        if result.get("asn"):
+            asn_parts.append(f"AS{result['asn']}")
+        if result.get("asn_org"):
+            asn_parts.append(f"({result['asn_org']})")
+        if asn_parts:
+            lines.append(Text("ASN: ", style="magenta") + Text(" ".join(asn_parts)))
+
+        if result.get("domain"):
+            lines.append(Text("Domain: ", style="blue") + Text(result["domain"]))
+
+        proxy_parts = [
+            p
+            for p in [result.get("proxy_type"), f"({result.get('usage_type')})" if result.get("usage_type") else None]
+            if p
+        ]
+        if proxy_parts:
+            lines.append(Text("Proxy: ", style="red") + Text(" ".join(proxy_parts)))
+
+        return lines
+
+    def _format_grouped_table(self, results: list[dict]) -> Table:
         table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("IP Address", style="cyan", no_wrap=True)
-        table.add_column("Org Managed", style="bright_green")
-        table.add_column("Org ID", style="bright_cyan")
-        table.add_column("Platform", style="bright_magenta")
-        table.add_column("Proxy Type", style="red")
-        table.add_column("Domain", style="blue")
-        table.add_column("City", style="green")
-        table.add_column("Country", style="yellow")
-        table.add_column("ASN", style="magenta")
-        table.add_column("Organization", style="white")
-        table.add_column("Usage Type", style="dim")
+        table.add_column("IP", style="cyan", no_wrap=True)
+        table.add_column("Org Info", style="bright_green")
+        table.add_column("Proxy", style="red")
+        table.add_column("Network", style="blue")
+        table.add_column("Location", style="yellow")
 
         for r in results:
             if r["error"]:
-                table.add_row(r["ip"], "", "", "", "", f"[red]ERROR: {r['error']}[/red]", "", "", "", "", "")
+                table.add_row(r["ip"], "", "", f"[red]ERROR: {r['error']}[/red]", "")
             else:
-                org_managed = "✓" if r.get("org_managed") else "-"
-                org_id = r.get("org_id") or "-"
-                platform = r.get("platform") or "-"
-                proxy_type = r.get("proxy_type") or "-"
-                domain = r.get("domain") or "-"
-                city = r.get("city") or "-"
-                country = r.get("country") or "-"
-                asn = f"AS{r['asn']}" if r.get("asn") else "-"
-                asn_org = r.get("asn_org") or "-"
-                usage_type = r.get("usage_type") or "-"
                 table.add_row(
-                    r["ip"], org_managed, org_id, platform, proxy_type, domain, city, country, asn, asn_org, usage_type
+                    r["ip"],
+                    self._format_org_cell(r),
+                    self._format_proxy_cell(r),
+                    self._format_network_cell(r),
+                    self._format_location_cell(r),
                 )
 
         return table
+
+    def _format_org_cell(self, result: dict) -> str:
+        org_info = []
+        if result.get("org_managed"):
+            org_info.append("✓")
+            if result.get("org_id"):
+                org_info.append(result["org_id"])
+            if result.get("platform"):
+                org_info.append(f"({result['platform']})")
+        return " ".join(org_info) if org_info else "-"
+
+    def _format_proxy_cell(self, result: dict) -> str:
+        proxy_info = []
+        if result.get("proxy_type"):
+            proxy_info.append(result["proxy_type"])
+        if result.get("usage_type"):
+            proxy_info.append(f"({result['usage_type']})")
+        return " ".join(proxy_info) if proxy_info else "-"
+
+    def _format_network_cell(self, result: dict) -> str:
+        network_info = []
+        if result.get("domain"):
+            network_info.append(result["domain"])
+        if result.get("asn"):
+            asn_str = f"AS{result['asn']}"
+            if result.get("asn_org"):
+                asn_str += f" ({result['asn_org']})"
+            network_info.append(asn_str)
+        return "\n".join(network_info) if network_info else "-"
+
+    def _format_location_cell(self, result: dict) -> str:
+        location_parts = [p for p in [result.get("city"), result.get("country")] if p]
+        return ", ".join(location_parts) if location_parts else "-"
 
     def format_csv(self, results: list[dict]) -> str:
         if not results:
