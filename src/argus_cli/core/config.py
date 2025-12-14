@@ -13,7 +13,7 @@ class Config:
         self.db_city = str(self.data_dir / "GeoLite2-City.mmdb")
         self.db_asn = str(self.data_dir / "GeoLite2-ASN.mmdb")
         self.db_proxy = str(self.data_dir / "IP2PROXY-IP-PROXYTYPE-COUNTRY-REGION-CITY-ISP-DOMAIN-USAGETYPE-ASN.BIN")
-        self.db_cfa_dir = str(self.data_dir / "cfa")
+        self.db_org_dir = str(self.data_dir / "org")
         self.state_file = str(self.data_dir / "state.json")
         self.config_file = str(self.data_dir / "keys.json")
 

@@ -29,7 +29,7 @@ class ArgusApp:
         self.console = console
         self.db_manager = DatabaseManager(self.config, self.console)
         self.lookup_service = GeoIPLookup(
-            self.config.db_city, self.config.db_asn, self.config.db_proxy, self.config.db_cfa_dir
+            self.config.db_city, self.config.db_asn, self.config.db_proxy, self.config.db_org_dir
         )
         self.file_parser = FileParser()
         self.formatter = ResultFormatter(self.console)

@@ -189,11 +189,11 @@ class DatabaseManager:
                 "[yellow]i[/yellow] IP2Proxy database not configured. Proxy detection will be unavailable."
             )
 
-        # Check for CFA databases
-        cfa_dir = os.path.join(self.config.data_dir, "cfa")
-        if not os.path.exists(cfa_dir) or not any(Path(cfa_dir).glob("*.bin")):
+        # Check for org databases
+        org_dir = os.path.join(self.config.data_dir, "org")
+        if not os.path.exists(org_dir) or not any(Path(org_dir).glob("*.bin")):
             self.console.print(
-                "[yellow]i[/yellow] CFA databases not found. CFA managed IP detection will be unavailable."
+                "[yellow]i[/yellow] Org databases not found. Org managed IP detection will be unavailable."
             )
 
     def _show_missing_config_error(self) -> None:
