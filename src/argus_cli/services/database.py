@@ -5,6 +5,7 @@ import sys
 import tarfile
 import zipfile
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import requests
 from rich.console import Console
@@ -186,6 +187,13 @@ class DatabaseManager:
         elif not os.path.exists(self.config.db_proxy):
             self.console.print(
                 "[yellow]i[/yellow] IP2Proxy database not configured. Proxy detection will be unavailable."
+            )
+
+        # Check for CFA databases
+        cfa_dir = os.path.join(self.config.data_dir, "cfa")
+        if not os.path.exists(cfa_dir) or not any(Path(cfa_dir).glob("*.bin")):
+            self.console.print(
+                "[yellow]i[/yellow] CFA databases not found. CFA managed IP detection will be unavailable."
             )
 
     def _show_missing_config_error(self) -> None:
