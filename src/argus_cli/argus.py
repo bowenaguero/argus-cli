@@ -72,6 +72,10 @@ class ArgusApp:
         exclude_city: list[str] | None,
         exclude_asn: list[int] | None,
         exclude_org: list[str] | None,
+        exclude_org_managed: bool,
+        exclude_not_org_managed: bool,
+        exclude_platform: list[str] | None,
+        exclude_org_id: list[str] | None,
         sort_by: str,
     ):
         start_time = time.time()
@@ -93,6 +97,10 @@ class ArgusApp:
             exclude_cities=exclude_city,
             exclude_asns=exclude_asn,
             exclude_orgs=exclude_org,
+            exclude_org_managed=exclude_org_managed,
+            exclude_not_org_managed=exclude_not_org_managed,
+            exclude_platforms=exclude_platform,
+            exclude_org_ids=exclude_org_id,
         )
         filtered_results = result_filter.filter_results(results)
 
@@ -219,6 +227,34 @@ def lookup(
             help="Exclude IPs from organizations containing text (case-insensitive)",
         ),
     ] = None,
+    exclude_org_managed: Annotated[
+        bool,
+        typer.Option(
+            "--exclude-org-managed",
+            help="Exclude IPs where org_managed is True",
+        ),
+    ] = False,
+    exclude_not_org_managed: Annotated[
+        bool,
+        typer.Option(
+            "--exclude-not-org-managed",
+            help="Exclude IPs where org_managed is False",
+        ),
+    ] = False,
+    exclude_platform: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--exclude-platform",
+            help="Exclude IPs by platform (e.g., aws, azure)",
+        ),
+    ] = None,
+    exclude_org_id: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--exclude-org-id",
+            help="Exclude IPs by org ID",
+        ),
+    ] = None,
     sort_by: Annotated[
         str,
         typer.Option(
@@ -253,6 +289,10 @@ def lookup(
         exclude_city,
         exclude_asn,
         exclude_org,
+        exclude_org_managed,
+        exclude_not_org_managed,
+        exclude_platform,
+        exclude_org_id,
         sort_by,
     )
 
