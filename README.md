@@ -1,7 +1,6 @@
 # argus
 
-![Argus Lookup](images/argus_lookup.png)
-![Argus Lookup File](images/argus_lookup_file.png)
+![Argus Lookup File](videos/argus_lookup_file.gif)
 
 Fast IP lookups using MaxMind GeoIP2 and IP2Proxy databases.
 
