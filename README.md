@@ -1,6 +1,7 @@
 # argus
 
-<kdb><img src="./images/argus.png" alt="Argus"/></kbd>
+![Argus Lookup](images/argus_lookup.png)
+![Argus Lookup File](images/argus_lookup_file.png)
 
 Fast IP lookups using MaxMind GeoIP2 and IP2Proxy databases.
 
@@ -40,11 +41,4 @@ argus lookup -f ips.txt -o results.json
 
 ## Options
 
-- `-f, --file` - Extract IPs from file (txt, pdf, xlsx)
-- `-xc, --exclude-country` - Exclude countries
-- `-xct, --exclude-city` - Exclude cities
-- `-xa, --exclude-asn` - Exclude ASN numbers
-- `-xo, --exclude-org` - Exclude organizations
-- `-o, --output` - Write results to file
-- `-fmt, --format` - Output format: json or csv
-- `--sort-by` - Sort results by field
+![Argus Help](images/argus_help.png)

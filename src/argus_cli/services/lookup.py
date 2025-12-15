@@ -101,6 +101,7 @@ class GeoIPLookup:
                         BarColumn(),
                         TaskProgressColumn(),
                         TextColumn("[cyan]{task.fields[current_ip]}"),
+                        transient=True,
                     ) as progress:
                         task = progress.add_task("lookup", total=len(ips), current_ip="")
                         for ip in ips:
