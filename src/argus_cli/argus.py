@@ -244,6 +244,7 @@ def lookup(
     exclude_platform: Annotated[
         list[str] | None,
         typer.Option(
+            "-xp",
             "--exclude-platform",
             help="Exclude IPs by platform (e.g., aws, azure)",
         ),
@@ -251,6 +252,7 @@ def lookup(
     exclude_org_id: Annotated[
         list[str] | None,
         typer.Option(
+            "-xoi",
             "--exclude-org-id",
             help="Exclude IPs by org ID",
         ),
