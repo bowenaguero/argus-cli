@@ -46,7 +46,7 @@ clean-build: ## Clean build artifacts
 	@uv run python -c "import shutil; import os; shutil.rmtree('dist') if os.path.exists('dist') else None"
 
 .PHONY: screenshot
-screenshot:
+screenshot: ## Generate screenshots of the CLI for the README
 	@echo "🚀 Generating screenshot of the terminal"
 	@freeze --execute "uv run argus lookup --help" -o images/argus_help.png -c full
 	@freeze --execute "uv run argus lookup 64.233.185.138" -o images/argus_lookup.png -c full
