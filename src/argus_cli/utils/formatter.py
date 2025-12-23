@@ -16,22 +16,19 @@ class ResultFormatter:
         return json.dumps(results, indent=2)
 
     def format_table(self, results: list[dict]) -> Table | Panel:
-        # Panel for single IP, table for multiple
-        if len(results) == 1:
-            return self._format_panel(results[0])
-        return self._format_grouped_table(results)
+        return self._format_panel(results[0]) if len(results) == 1 else self._format_grouped_table(results)
 
     def _format_panel(self, result: dict) -> Panel:
         if result["error"]:
             content = Text(f"ERROR: {result['error']}", style="bold red")
             return Panel(content, title=f"[cyan]{result['ip']}[/cyan]", border_style="red")
 
-        lines = self._build_panel_lines(result)
+        lines = self.create_panel_lines(result)
         content = Text("\n").join(lines) if lines else Text("No additional information available", style="dim")
         border_style = "bright_green" if result.get("org_managed") else "cyan"
         return Panel(content, title=f"[cyan]{result['ip']}[/cyan]", border_style=border_style)
 
-    def _build_panel_lines(self, result: dict) -> list[Text]:
+    def create_panel_lines(self, result: dict) -> list[Text]:
         lines = []
 
         if result.get("org_managed"):
@@ -88,33 +85,34 @@ class ResultFormatter:
         return table
 
     def _format_org_cell(self, result: dict) -> str:
-        org_info = []
-        if result.get("org_managed"):
-            org_info.append("✓")
-            if result.get("org_id"):
-                org_info.append(result["org_id"])
-            if result.get("platform"):
-                org_info.append(f"({result['platform']})")
-        return " ".join(org_info) if org_info else "-"
+        if not result.get("org_managed"):
+            return "-"
+
+        parts = ["✓"]
+        if result.get("org_id"):
+            parts.append(result["org_id"])
+        if result.get("platform"):
+            parts.append(f"({result['platform']})")
+        return " ".join(parts)
 
     def _format_proxy_cell(self, result: dict) -> str:
-        proxy_info = []
+        parts = []
         if result.get("proxy_type"):
-            proxy_info.append(result["proxy_type"])
+            parts.append(result["proxy_type"])
         if result.get("usage_type"):
-            proxy_info.append(f"({result['usage_type']})")
-        return " ".join(proxy_info) if proxy_info else "-"
+            parts.append(f"({result['usage_type']})")
+        return " ".join(parts) if parts else "-"
 
     def _format_network_cell(self, result: dict) -> str:
-        network_info = []
+        parts = []
         if result.get("domain"):
-            network_info.append(result["domain"])
+            parts.append(result["domain"])
         if result.get("asn"):
             asn_str = f"AS{result['asn']}"
             if result.get("asn_org"):
                 asn_str += f" ({result['asn_org']})"
-            network_info.append(asn_str)
-        return "\n".join(network_info) if network_info else "-"
+            parts.append(asn_str)
+        return "\n".join(parts) if parts else "-"
 
     def _format_location_cell(self, result: dict) -> str:
         location_parts = [p for p in [result.get("city"), result.get("country")] if p]

@@ -53,19 +53,14 @@ class GeoIPLookup:
         }
 
         if proxy_db and self.has_proxy_db:
-            try:
-                proxy_record = proxy_db.get_all(ip)
-            except Exception:  # noqa: S110
-                pass
-            else:
-                if proxy_record and proxy_record["country_short"] != "-":
-                    result["proxy_type"] = proxy_record["proxy_type"] if proxy_record["proxy_type"] != "-" else None
-                    result["domain"] = proxy_record["domain"] if proxy_record["domain"] != "-" else None
-                    result["isp"] = proxy_record["isp"] if proxy_record["isp"] != "-" else None
-                    result["domain_name"] = proxy_record["domain"] if proxy_record["domain"] != "-" else None
-                    result["usage_type"] = proxy_record["usage_type"] if proxy_record["usage_type"] != "-" else None
+            proxy_record = proxy_db.get_all(ip)
+            if proxy_record and proxy_record["country_short"] != "-":
+                result["proxy_type"] = proxy_record["proxy_type"] if proxy_record["proxy_type"] != "-" else None
+                result["domain"] = proxy_record["domain"] if proxy_record["domain"] != "-" else None
+                result["isp"] = proxy_record["isp"] if proxy_record["isp"] != "-" else None
+                result["domain_name"] = proxy_record["domain"] if proxy_record["domain"] != "-" else None
+                result["usage_type"] = proxy_record["usage_type"] if proxy_record["usage_type"] != "-" else None
 
-        # Check org databases for org managed IPs
         if self.org_lookup.has_org_dbs:
             org_result = self.org_lookup.lookup_ip(ip)
             if org_result:
@@ -80,7 +75,6 @@ class GeoIPLookup:
 
         show_progress = len(ips) > 1
 
-        # Load org databases if available
         if self.org_lookup.load_databases():
             self.org_lookup.has_org_dbs = True
 

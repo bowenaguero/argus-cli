@@ -29,7 +29,7 @@ class OrgLookup:
                     "conn": conn,
                 })
                 loaded_count += 1
-            except Exception:  # noqa: S112
+            except Exception:
                 continue
 
         return loaded_count > 0

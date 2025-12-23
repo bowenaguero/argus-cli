@@ -10,7 +10,6 @@ import pypdf
 class FileParser:
     @staticmethod
     def expand_cidr(cidr: str) -> list[str]:
-        """Expand CIDR block into individual IP addresses."""
         try:
             network = ipaddress.ip_network(cidr, strict=False)
         except ValueError as e:

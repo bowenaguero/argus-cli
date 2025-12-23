@@ -36,11 +36,8 @@ class DatabaseManager:
             return {}
 
     def save_state(self, state: dict) -> None:
-        try:
-            with open(self.config.state_file, "w") as f:
-                json.dump(state, f, indent=2)
-        except Exception:  # noqa: S110
-            pass
+        with open(self.config.state_file, "w") as f:
+            json.dump(state, f, indent=2)
 
     def needs_download(self, edition_id: str) -> bool:
         state = self.load_state()
@@ -166,13 +163,11 @@ class DatabaseManager:
 
     def ensure_databases(self) -> None:
         maxmind_key = self.config.get_license_key("maxmind_license_key")
-        if not maxmind_key:
-            if os.path.exists(self.config.db_city) and os.path.exists(self.config.db_asn):
-                pass
-            else:
-                self._show_missing_config_error()
-                sys.exit(1)
-        else:
+        if not maxmind_key and not (os.path.exists(self.config.db_city) and os.path.exists(self.config.db_asn)):
+            self.display_missing_license_key_help()
+            sys.exit(1)
+
+        if maxmind_key:
             city_ok = self.download_maxmind_database(maxmind_key, "GeoLite2-City", self.config.db_city)
             asn_ok = self.download_maxmind_database(maxmind_key, "GeoLite2-ASN", self.config.db_asn)
 
@@ -189,14 +184,13 @@ class DatabaseManager:
                 "[yellow]i[/yellow] IP2Proxy database not configured. Proxy detection will be unavailable."
             )
 
-        # Check for org databases
         org_dir = os.path.join(self.config.data_dir, "org")
         if not os.path.exists(org_dir) or not any(Path(org_dir).glob("*.bin")):
             self.console.print(
                 "[yellow]i[/yellow] Org databases not found. Org managed IP detection will be unavailable."
             )
 
-    def _show_missing_config_error(self) -> None:
+    def display_missing_license_key_help(self) -> None:
         self.console.print("\n[red]✗ Missing license key[/red]")
         self.console.print("─" * 60, style="dim")
         self.console.print("Run setup to configure your MaxMind license key:")
