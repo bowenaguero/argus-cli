@@ -23,10 +23,10 @@ class Config:
     def get_license_key(self, license_key_name) -> str | None:
         if not os.path.exists(self.config_file):
             return None
+
         try:
             with open(self.config_file) as f:
                 config = json.load(f)
                 return config.get(license_key_name)
-        except Exception:  # noqa: S110
-            pass
-        return None
+        except (json.JSONDecodeError, Exception):
+            return None
