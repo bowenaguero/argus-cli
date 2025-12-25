@@ -20,7 +20,7 @@ class ResultFilter:
         self.exclude_org_ids = [o.lower() for o in (exclude_org_ids or [])]
 
     def should_exclude(self, result: dict) -> bool:
-        if result["error"]:
+        if result.get("error"):
             return False
 
         return self._exclude_by_location(result) or self._exclude_by_asn(result) or self._exclude_by_org_status(result)
@@ -35,7 +35,7 @@ class ResultFilter:
         if self.exclude_asns and result["asn"] in self.exclude_asns:
             return True
 
-        if self.exclude_orgs and result["asn_org"]:
+        if self.exclude_orgs and result.get("asn_org"):
             org_lower = result["asn_org"].lower()
             if any(excl in org_lower for excl in self.exclude_orgs):
                 return True
