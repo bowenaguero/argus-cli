@@ -25,11 +25,10 @@ class ResultFilter:
 
         return self._exclude_by_location(result) or self._exclude_by_asn(result) or self._exclude_by_org_status(result)
 
-    def _exclude_by_location(self, result: dict) -> bool:
+    def _exclude_by_location(self, result: dict) -> bool | list:
         if self.exclude_countries and result["country"] and result["country"].upper() in self.exclude_countries:
             return True
-
-        return bool(self.exclude_cities and result["city"] and result["city"].lower() in self.exclude_cities)
+        return self.exclude_cities and result["city"] and result["city"].lower() in self.exclude_cities
 
     def _exclude_by_asn(self, result: dict) -> bool:
         if self.exclude_asns and result["asn"] in self.exclude_asns:
@@ -42,7 +41,7 @@ class ResultFilter:
 
         return False
 
-    def _exclude_by_org_status(self, result: dict) -> bool:
+    def _exclude_by_org_status(self, result: dict) -> bool | list | None:
         if self.exclude_org_managed and result.get("org_managed") is True:
             return True
 
@@ -51,8 +50,7 @@ class ResultFilter:
 
         if self.exclude_platforms and result.get("platform") and result["platform"].lower() in self.exclude_platforms:
             return True
-
-        return bool(self.exclude_org_ids and result.get("org_id") and result["org_id"].lower() in self.exclude_org_ids)
+        return self.exclude_org_ids and result.get("org_id") and result["org_id"].lower() in self.exclude_org_ids
 
     def filter_results(self, results: list[dict]) -> list[dict]:
         return [r for r in results if not self.should_exclude(r)]
