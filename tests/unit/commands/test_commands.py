@@ -139,7 +139,7 @@ class TestLookupCommand:
                                     assert len(result) == 1
                                     assert result[0]["ip"] == "8.8.8.8"
 
-    @patch("argus_cli.commands.lookup.ParameterValidator.validate_ip")
+    @patch("argus_cli.utils.validators.ParameterValidator.validate_ip")
     def test_execute_with_validation_error(self, mock_validate_ip, lookup_command):
         """Test lookup execution with validation error."""
 
